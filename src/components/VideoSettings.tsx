@@ -76,18 +76,19 @@ export default function VideoSettings({ settings, onSettingsChange }: VideoSetti
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Resolution</label>
+          <label className="block text-sm font-medium text-gray-700">Max Resolution</label>
           <select
             value={settings.resolution}
             onChange={(e) => handleSettingChange('resolution', e.target.value)}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           >
-            <option value="1920x1080">1080p</option>
-            <option value="1280x720">720p</option>
-            <option value="854x480">480p</option>
+            <option value="1920x1080">1080p (1920px)</option>
+            <option value="1280x720">720p (1280px)</option>
+            <option value="854x480">480p (854px)</option>
           </select>
         </div>
       </div>
+      <p className="mt-4 text-sm text-gray-500">Note: Resolution scaling maintains the original aspect ratio</p>
     </div>
   );
 }

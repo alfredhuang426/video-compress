@@ -47,6 +47,12 @@ export function useFFmpeg() {
     return ffmpegLoadPromise.current;
   }, []);
 
+  const getScaleFilter = (resolution: string) => {
+    const [width] = resolution.split('x');
+    // Force divisible by 2 for compatibility, maintain aspect ratio
+    return `scale='min(${width},iw)':'-2'`;
+  };
+
   const convert = async (file: File, settings: ConversionSettings) => {
     try {
       setError(null);
@@ -65,6 +71,8 @@ export function useFFmpeg() {
       
       await ffmpeg.writeFile(inputFileName, await fetchFile(file));
 
+      const scaleFilter = getScaleFilter(settings.resolution);
+      
       const command = [
         '-i', inputFileName,
         '-c:v', settings.videoCodec,
@@ -72,7 +80,8 @@ export function useFFmpeg() {
         '-b:v', settings.videoBitrate,
         '-b:a', settings.audioBitrate,
         '-r', settings.frameRate,
-        '-s', settings.resolution,
+        '-vf', scaleFilter,
+        '-preset', 'medium',
         '-f', 'mp4',
         '-movflags', '+faststart',
         outputFileName
