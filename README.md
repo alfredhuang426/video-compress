@@ -2,6 +2,8 @@
 
 A simple, browser-based video converter built with React and FFMPEG.wasm. Convert your videos directly in the browser without uploading them to any server.
 
+[Demo](https://compress.addy.ie)
+
 ## Features
 
 - 🎥 Browser-based video conversion
