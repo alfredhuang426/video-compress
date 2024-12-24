@@ -11,6 +11,11 @@ A simple, browser-based video converter built with React and FFMPEG.wasm. Conver
 - ⚡ Fast, client-side processing
 - 📱 Responsive design
 - 🎛️ Advanced conversion settings:
+  - Multiple compression methods:
+    - Target quality percentage (1-100%)
+    - Target file size in MB
+    - Quality-based compression (QP: 18-51)
+    - Bitrate-based compression
   - Video codec selection (H.264/H.265)
   - Audio codec options (AAC/MP3)
   - Customizable bitrates
@@ -62,8 +67,13 @@ npm run build
 
 1. Click the upload area or drag and drop a video file
 2. Adjust conversion settings (optional):
+   - Choose a compression method:
+     - Quality percentage: Adjust quality from 1-100% (lower = smaller file)
+     - Target file size: Specify desired output size in MB
+     - Quality-based (QP): Fine-tune quality from 18 (best) to 51 (smallest)
+     - Bitrate: Set specific video bitrate
    - Select video and audio codecs
-   - Set bitrates
+   - Set audio bitrate
    - Choose frame rate
    - Adjust resolution
 3. Click "Convert to MP4" to start the conversion
@@ -76,6 +86,7 @@ npm run build
 - Cross-Origin Isolation is required for SharedArrayBuffer support
 - Resolution scaling maintains aspect ratio using the formula: `scale='min(target_width,iw)':'-2'`
 - Video dimensions are automatically adjusted to be divisible by 2 for codec compatibility
+- Quality-based compression uses FFmpeg's QP parameter for consistent results
 
 ## Contributing
 
