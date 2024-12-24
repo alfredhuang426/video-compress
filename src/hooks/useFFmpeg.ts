@@ -53,6 +53,32 @@ export function useFFmpeg() {
     return `scale='min(${width},iw)':'-2'`;
   };
 
+  const getCompressionArgs = (settings: ConversionSettings): string[] => {
+    switch (settings.compressionMethod) {
+      case 'percentage': {
+        // For percentage, we'll use CRF with a scaled quality value
+        // 100% = CRF 18 (best), 1% = CRF 51 (worst)
+        const percentage = parseFloat(settings.targetPercentage || '100');
+        const crf = Math.round(51 - ((percentage / 100) * (51 - 18)));
+        return ['-qp', crf.toString()];
+      }
+      case 'filesize': {
+        // For filesize target, we'll also use CRF with a moderate value
+        // and rely on the two-pass encoding
+        const targetSize = parseFloat(settings.targetFilesize || '100');
+        // Larger target = lower CRF (better quality)
+        const crf = Math.max(18, Math.min(51, Math.round(51 - (Math.log(targetSize) / Math.log(10240)) * (51 - 18))));
+        return ['-qp', crf.toString()];
+      }
+      case 'crf':
+        // FFmpeg.wasm uses -qp instead of -crf
+        return ['-qp', settings.crfValue || '23'];
+      case 'bitrate':
+      default:
+        return ['-b:v', settings.videoBitrate];
+    }
+  };
+
   const convert = async (file: File, settings: ConversionSettings) => {
     try {
       setError(null);
@@ -72,12 +98,13 @@ export function useFFmpeg() {
       await ffmpeg.writeFile(inputFileName, await fetchFile(file));
 
       const scaleFilter = getScaleFilter(settings.resolution);
+      const compressionArgs = getCompressionArgs(settings);
       
       const command = [
         '-i', inputFileName,
         '-c:v', settings.videoCodec,
         '-c:a', settings.audioCodec,
-        '-b:v', settings.videoBitrate,
+        ...compressionArgs,
         '-b:a', settings.audioBitrate,
         '-r', settings.frameRate,
         '-vf', scaleFilter,

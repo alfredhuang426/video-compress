@@ -11,7 +11,8 @@ const defaultSettings: ConversionSettings = {
   videoBitrate: '2500k',
   audioBitrate: '128k',
   frameRate: '30',
-  resolution: '1280x720'
+  resolution: '1280x720',
+  compressionMethod: 'bitrate'
 };
 
 export default function VideoConverter() {
