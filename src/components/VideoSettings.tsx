@@ -44,6 +44,7 @@ export default function VideoSettings({ settings, onSettingsChange }: VideoSetti
             onChange={(e) => handleSettingChange('videoBitrate', e.target.value)}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           >
+            <option value="300k">300 Kbps</option>
             <option value="1000k">1 Mbps</option>
             <option value="2500k">2.5 Mbps</option>
             <option value="5000k">5 Mbps</option>
@@ -57,6 +58,7 @@ export default function VideoSettings({ settings, onSettingsChange }: VideoSetti
             onChange={(e) => handleSettingChange('audioBitrate', e.target.value)}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           >
+            <option value="64k">64 kbps</option>
             <option value="96k">96 kbps</option>
             <option value="128k">128 kbps</option>
             <option value="192k">192 kbps</option>
