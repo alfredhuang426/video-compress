@@ -25,7 +25,9 @@ export default function VideoConverter() {
     error,
     loading,
     progress,
-    isLoadingFFmpeg
+    isLoadingFFmpeg,
+    fileSizes,
+    formatFileSize
   } = useFFmpeg();
 
   const handleConvert = async () => {
@@ -65,6 +67,22 @@ export default function VideoConverter() {
             progress={progress}
             isLoadingFFmpeg={isLoadingFFmpeg}
           />
+
+          {fileSizes.converted !== null && (
+            <div className="text-sm">
+              <div className="flex justify-between mb-1">
+                <span>Original size: {formatFileSize(fileSizes.original)}</span>
+                <span>Converted size: {formatFileSize(fileSizes.converted)}</span>
+              </div>
+              <div className={`font-medium ${
+                fileSizes.converted < fileSizes.original ? 'text-green-600' : 'text-red-600'
+              }`}>
+                {fileSizes.converted < fileSizes.original ? 'Saved: ' : 'Increased: '}
+                {formatFileSize(Math.abs(fileSizes.converted - fileSizes.original))}
+                ({Math.abs(Math.round((1 - fileSizes.converted / fileSizes.original) * 100))}%)
+              </div>
+            </div>
+          )}
 
           <button
             onClick={handleConvert}

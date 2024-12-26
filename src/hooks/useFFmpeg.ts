@@ -89,6 +89,7 @@ export function useFFmpeg() {
       }
 
       setLoading(true);
+      setFileSizes({ original: file.size, converted: null });
       const ffmpeg = ffmpegRef.current;
       const { fetchFile } = await import('@ffmpeg/util');
       
@@ -118,8 +119,9 @@ export function useFFmpeg() {
       
       const data = await ffmpeg.readFile(outputFileName);
       const blob = new Blob([data], { type: 'video/mp4' });
-      const url = URL.createObjectURL(blob);
+      setFileSizes(prev => ({ ...prev, converted: blob.size }));
       
+      const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = file.name.replace(/\.[^/.]+$/, '') + '_converted.mp4';
@@ -135,11 +137,26 @@ export function useFFmpeg() {
     }
   };
 
+  const [fileSizes, setFileSizes] = useState<{ original: number; converted: number | null }>({
+    original: 0,
+    converted: null
+  });
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
+  };
+
   return {
     convert,
     error,
     loading,
     progress,
-    isLoadingFFmpeg
+    isLoadingFFmpeg,
+    fileSizes,
+    formatFileSize
   };
 }
