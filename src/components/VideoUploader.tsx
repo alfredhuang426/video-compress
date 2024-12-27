@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Upload, AlertCircle } from 'lucide-react';
 
 interface VideoUploaderProps {
@@ -18,6 +18,8 @@ export default function VideoUploader({
   progress,
   isLoadingFFmpeg
 }: VideoUploaderProps) {
+  const [isDragging, setIsDragging] = useState(false);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile && selectedFile.type.startsWith('video/')) {
@@ -27,9 +29,42 @@ export default function VideoUploader({
     }
   };
 
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    
+    const droppedFile = e.dataTransfer.files[0];
+    if (droppedFile && droppedFile.type.startsWith('video/')) {
+      onFileChange(droppedFile);
+    } else {
+      onFileChange(null);
+    }
+  };
+
   return (
     <>
-      <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-12 bg-gray-50">
+      <div 
+        id="video-uploader-area"
+        className={`flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-12 bg-gray-50 ${
+          isDragging ? 'border-green-500' : 'border-gray-300'
+        }`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
         <input
           type="file"
           accept="video/*"
