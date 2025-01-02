@@ -93,7 +93,7 @@ export default function VideoConverter() {
                 : 'bg-blue-600 hover:bg-blue-700'
             }`}
           >
-            {isLoadingFFmpeg ? 'Loading FFmpeg...' : loading ? 'Converting...' : 'Convert to MP4'}
+            {isLoadingFFmpeg ? 'Loading FFmpeg...' : loading ? 'Compressing...' : 'Compress'}
           </button>
         </div>
       </div>

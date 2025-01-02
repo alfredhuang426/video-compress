@@ -76,7 +76,7 @@ npm run build
    - Set audio bitrate
    - Choose frame rate
    - Adjust resolution
-3. Click "Convert to MP4" to start the conversion
+3. Click "Compress" to start the conversion
 4. Wait for the conversion to complete
 5. The converted video will automatically download
 
