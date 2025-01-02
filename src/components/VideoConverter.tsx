@@ -43,12 +43,26 @@ export default function VideoConverter() {
             <Video className="w-8 h-8 text-blue-600" />
             <h1 className="text-2xl font-bold text-gray-800">Video Converter</h1>
           </div>
-          <button
-            onClick={() => setShowSettings(!showSettings)}
-            className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
-          >
-            Settings
-          </button>
+          <div className="flex items-center space-x-2">
+            {file && (
+              <button
+                onClick={() => {
+                  setFile(null);
+                  setSettings(defaultSettings);
+                  setShowSettings(false);
+                }}
+                className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+              >
+                Reset
+              </button>
+            )}
+            <button
+              onClick={() => setShowSettings(!showSettings)}
+              className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+            >
+              Settings
+            </button>
+          </div>
         </div>
 
         {showSettings && (
