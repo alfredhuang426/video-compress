@@ -4,6 +4,8 @@ import { createFFmpeg, fetchFile } from '@ffmpeg/ffmpeg';
 import { Button } from './components/ui/button';
 import { Progress } from './components/ui/progress';
 import { FileVideo, Upload, X } from 'lucide-react';
+import VideoSettings, { SettingsButton } from './components/VideoSettings';
+import { ConversionSettings, defaultSettings } from './types';
 
 const ffmpeg = createFFmpeg({ log: true });
 
@@ -15,6 +17,8 @@ function App() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [processedSize, setProcessedSize] = useState<number | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [settings, setSettings] = useState<ConversionSettings>(defaultSettings);
+  const [showSettings, setShowSettings] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const previewRef = useRef<HTMLVideoElement>(null);
 
@@ -74,16 +78,40 @@ function App() {
       setProcessedSize(Math.min(video.size * ratio * 0.4, video.size * 0.4));
     });
 
-    // Run the FFmpeg command
-    await ffmpeg.run(
+    // Build FFmpeg command based on settings
+    const args = [
       '-i', 'input.mp4',
-      '-c:v', 'libx264',
-      '-crf', '28',
-      '-preset', 'medium',
-      '-c:a', 'aac',
-      '-b:a', '128k',
+      '-c:v', settings.videoCodec,
+    ];
+
+    // Add compression method specific arguments
+    switch (settings.compressionMethod) {
+      case 'bitrate':
+        args.push('-b:v', settings.videoBitrate);
+        break;
+      case 'crf':
+        args.push('-crf', settings.crfValue || '23');
+        break;
+      case 'percentage':
+        const crf = Math.round(51 - (parseInt(settings.targetPercentage || '100') / 100) * 33);
+        args.push('-crf', crf.toString());
+        break;
+      case 'filesize':
+        const targetBitrate = Math.round((parseInt(settings.targetFilesize || '100') * 8192) / (videoRef.current?.duration || 60));
+        args.push('-b:v', `${targetBitrate}k`);
+        break;
+    }
+
+    // Add remaining settings
+    args.push(
+      '-c:a', settings.audioCodec,
+      '-b:a', settings.audioBitrate,
+      '-r', settings.frameRate,
       'output.mp4'
     );
+
+    // Run the FFmpeg command
+    await ffmpeg.run(...args);
 
     // Read the result
     const data = ffmpeg.FS('readFile', 'output.mp4');
@@ -114,7 +142,10 @@ function App() {
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-2xl mx-auto">
         <div className="bg-white rounded-lg shadow-lg p-6">
-          <h1 className="text-2xl font-bold mb-4">Video Compressor</h1>
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-2xl font-bold">Video Compressor</h1>
+            <SettingsButton onClick={() => setShowSettings(true)} />
+          </div>
           <p className="text-gray-600 mb-6">
             Compress your videos right in the browser. No upload needed - everything happens on your device.
           </p>
@@ -222,6 +253,13 @@ function App() {
           )}
         </div>
       </div>
+
+      <VideoSettings 
+        settings={settings}
+        onSettingsChange={setSettings}
+        open={showSettings}
+        onOpenChange={setShowSettings}
+      />
     </div>
   );
 }
