@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { createFFmpeg, fetchFile } from '@ffmpeg/ffmpeg';
 import { Button } from './components/ui/button';
@@ -14,11 +14,33 @@ function App() {
   const [outputUrl, setOutputUrl] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [processedSize, setProcessedSize] = useState<number | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>('');
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const previewRef = useRef<HTMLVideoElement>(null);
 
   // Load FFmpeg
   React.useEffect(() => {
     load();
   }, []);
+
+  // Create object URL for preview when video is selected
+  React.useEffect(() => {
+    if (video) {
+      const url = URL.createObjectURL(video);
+      setPreviewUrl(url);
+      return () => URL.revokeObjectURL(url);
+    }
+  }, [video]);
+
+  // Update preview position based on progress
+  React.useEffect(() => {
+    if (previewRef.current && videoRef.current && isProcessing) {
+      const duration = videoRef.current.duration;
+      if (duration) {
+        previewRef.current.currentTime = (progress / 100) * duration;
+      }
+    }
+  }, [progress, isProcessing]);
 
   const load = async () => {
     await ffmpeg.load();
@@ -151,6 +173,23 @@ function App() {
 
               {isProcessing && (
                 <div className="mt-4">
+                  <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden mb-4">
+                    <video 
+                      ref={videoRef}
+                      src={previewUrl}
+                      className="absolute inset-0 w-full h-full opacity-50"
+                      muted
+                    />
+                    <video
+                      ref={previewRef}
+                      src={previewUrl}
+                      className="absolute inset-0 w-full h-full clip-progress"
+                      style={{
+                        clipPath: `inset(0 ${100 - progress}% 0 0)`
+                      }}
+                      muted
+                    />
+                  </div>
                   <Progress value={progress} className="mb-2" />
                   <div className="text-center text-sm text-gray-600">
                     Compressing... {progress}%
