@@ -1,9 +1,9 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { createFFmpeg, fetchFile } from '@ffmpeg/ffmpeg';
 import { Button } from './components/ui/button';
 import { Progress } from './components/ui/progress';
-import { FileVideo, Upload, X } from 'lucide-react';
+import { FileVideo, Upload, X, Loader2 } from 'lucide-react';
 import VideoSettings, { SettingsButton } from './components/VideoSettings';
 import { ConversionSettings, defaultSettings } from './types';
 
@@ -11,6 +11,7 @@ const ffmpeg = createFFmpeg({ log: true });
 
 function App() {
   const [isReady, setIsReady] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [video, setVideo] = useState<File | null>(null);
   const [progress, setProgress] = useState(0);
   const [outputUrl, setOutputUrl] = useState('');
@@ -22,33 +23,17 @@ function App() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const previewRef = useRef<HTMLVideoElement>(null);
 
-  // Load FFmpeg
-  React.useEffect(() => {
-    load();
-  }, []);
-
-  // Create object URL for preview when video is selected
-  React.useEffect(() => {
-    if (video) {
-      const url = URL.createObjectURL(video);
-      setPreviewUrl(url);
-      return () => URL.revokeObjectURL(url);
+  // Load FFmpeg only when needed
+  const loadFFmpeg = async () => {
+    try {
+      setIsLoading(true);
+      await ffmpeg.load();
+      setIsReady(true);
+    } catch (error) {
+      console.error('Error loading FFmpeg:', error);
+    } finally {
+      setIsLoading(false);
     }
-  }, [video]);
-
-  // Update preview position based on progress
-  React.useEffect(() => {
-    if (previewRef.current && videoRef.current && isProcessing) {
-      const duration = videoRef.current.duration;
-      if (duration) {
-        previewRef.current.currentTime = (progress / 100) * duration;
-      }
-    }
-  }, [progress, isProcessing]);
-
-  const load = async () => {
-    await ffmpeg.load();
-    setIsReady(true);
   };
 
   const resetState = () => {
@@ -83,14 +68,38 @@ function App() {
       'video/*': []
     },
     maxFiles: 1,
-    onDrop: (acceptedFiles) => {
+    onDrop: async (acceptedFiles) => {
       resetState(); // Reset state before setting new video
       setVideo(acceptedFiles[0]);
+      
+      // Load FFmpeg if not already loaded
+      if (!isReady) {
+        await loadFFmpeg();
+      }
     }
   });
 
+  // Create object URL for preview when video is selected
+  React.useEffect(() => {
+    if (video) {
+      const url = URL.createObjectURL(video);
+      setPreviewUrl(url);
+      return () => URL.revokeObjectURL(url);
+    }
+  }, [video]);
+
+  // Update preview position based on progress
+  React.useEffect(() => {
+    if (previewRef.current && videoRef.current && isProcessing) {
+      const duration = videoRef.current.duration;
+      if (duration) {
+        previewRef.current.currentTime = (progress / 100) * duration;
+      }
+    }
+  }, [progress, isProcessing]);
+
   const compressVideo = async () => {
-    if (!video) return;
+    if (!video || !isReady) return;
 
     setIsProcessing(true);
     setProgress(0);
@@ -162,17 +171,6 @@ function App() {
     }
   };
 
-  if (!isReady) {
-    return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-4">Loading video compressor...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-2xl mx-auto">
@@ -188,12 +186,21 @@ function App() {
           {!video ? (
             <div 
               {...getRootProps()} 
-              className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
+              className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors relative
                 ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}`}
             >
               <input {...getInputProps()} />
-              <FileVideo className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-              <p className="text-gray-600">Drag and drop a video file here, or click to select</p>
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-12 h-12 mx-auto mb-4 text-gray-400 animate-spin" />
+                  <p className="text-gray-600">Loading video processor...</p>
+                </>
+              ) : (
+                <>
+                  <FileVideo className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                  <p className="text-gray-600">Drag and drop a video file here, or click to select</p>
+                </>
+              )}
             </div>
           ) : (
             <div>
@@ -214,9 +221,19 @@ function App() {
                 <Button 
                   onClick={compressVideo}
                   className="w-full flex items-center justify-center gap-2"
+                  disabled={!isReady}
                 >
-                  <Upload className="w-5 h-5" />
-                  Compress Video
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Loading...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-5 h-5" />
+                      Compress Video
+                    </>
+                  )}
                 </Button>
               )}
 
