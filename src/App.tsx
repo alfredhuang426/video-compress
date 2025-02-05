@@ -51,12 +51,40 @@ function App() {
     setIsReady(true);
   };
 
+  const resetState = () => {
+    // Revoke any existing object URLs to prevent memory leaks
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    if (outputUrl) {
+      URL.revokeObjectURL(outputUrl);
+    }
+
+    // Reset all state variables
+    setVideo(null);
+    setProgress(0);
+    setOutputUrl('');
+    setIsProcessing(false);
+    setProcessedSize(null);
+    setPreviewUrl('');
+    setSettings(defaultSettings);
+
+    // Reset video elements
+    if (videoRef.current) {
+      videoRef.current.src = '';
+    }
+    if (previewRef.current) {
+      previewRef.current.src = '';
+    }
+  };
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: {
       'video/*': []
     },
     maxFiles: 1,
     onDrop: (acceptedFiles) => {
+      resetState(); // Reset state before setting new video
       setVideo(acceptedFiles[0]);
     }
   });
@@ -110,21 +138,28 @@ function App() {
       'output.mp4'
     );
 
-    // Run the FFmpeg command
-    await ffmpeg.run(...args);
+    try {
+      // Run the FFmpeg command
+      await ffmpeg.run(...args);
 
-    // Read the result
-    const data = ffmpeg.FS('readFile', 'output.mp4');
-    const url = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
-    
-    setOutputUrl(url);
-    setIsProcessing(false);
-    setProgress(100);
-    setProcessedSize(data.length);
+      // Read the result
+      const data = ffmpeg.FS('readFile', 'output.mp4');
+      const url = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
+      
+      setOutputUrl(url);
+      setIsProcessing(false);
+      setProgress(100);
+      setProcessedSize(data.length);
 
-    // Clean up
-    ffmpeg.FS('unlink', 'input.mp4');
-    ffmpeg.FS('unlink', 'output.mp4');
+      // Clean up
+      ffmpeg.FS('unlink', 'input.mp4');
+      ffmpeg.FS('unlink', 'output.mp4');
+    } catch (error) {
+      console.error('Error during compression:', error);
+      setIsProcessing(false);
+      setProgress(0);
+      setProcessedSize(null);
+    }
   };
 
   if (!isReady) {
@@ -168,7 +203,7 @@ function App() {
                   <span className="font-medium">{video.name}</span>
                 </div>
                 <button 
-                  onClick={() => setVideo(null)}
+                  onClick={resetState}
                   className="text-gray-500 hover:text-gray-700"
                 >
                   <X className="w-5 h-5" />
