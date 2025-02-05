@@ -13,6 +13,7 @@ function App() {
   const [progress, setProgress] = useState(0);
   const [outputUrl, setOutputUrl] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [processedSize, setProcessedSize] = useState<number | null>(null);
 
   // Load FFmpeg
   React.useEffect(() => {
@@ -39,9 +40,17 @@ function App() {
 
     setIsProcessing(true);
     setProgress(0);
+    setProcessedSize(0);
 
     // Write the file to memory
     ffmpeg.FS('writeFile', 'input.mp4', await fetchFile(video));
+
+    // Set up progress tracking
+    ffmpeg.setProgress(({ ratio }) => {
+      setProgress(Math.round(ratio * 100));
+      // Simulate growing file size during compression
+      setProcessedSize(Math.min(video.size * ratio * 0.4, video.size * 0.4));
+    });
 
     // Run the FFmpeg command
     await ffmpeg.run(
@@ -61,6 +70,7 @@ function App() {
     setOutputUrl(url);
     setIsProcessing(false);
     setProgress(100);
+    setProcessedSize(data.length);
 
     // Clean up
     ffmpeg.FS('unlink', 'input.mp4');
@@ -122,10 +132,29 @@ function App() {
                 </Button>
               )}
 
+              {(isProcessing || outputUrl) && (
+                <div className="flex gap-4 pt-6">
+                  <div className="bg-gray-50 p-5 rounded-2xl flex-1">
+                    <div className="text-[0.7rem] uppercase text-gray-500">Original</div>
+                    <div className="text-3xl font-bold tracking-tight">
+                      {(video.size / (1024 * 1024)).toFixed(1)} <span className="text-3xl">MB</span>
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 p-5 rounded-2xl flex-1">
+                    <div className="text-[0.7rem] uppercase text-gray-500">Compressed</div>
+                    <div className="text-3xl font-bold tracking-tight">
+                      {processedSize ? (processedSize / (1024 * 1024)).toFixed(1) : '0.0'} <span className="text-3xl">MB</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {isProcessing && (
-                <div>
+                <div className="mt-4">
                   <Progress value={progress} className="mb-2" />
-                  <p className="text-center text-sm text-gray-600">Compressing video...</p>
+                  <div className="text-center text-sm text-gray-600">
+                    Compressing... {progress}%
+                  </div>
                 </div>
               )}
 
@@ -136,13 +165,18 @@ function App() {
                     controls 
                     className="w-full rounded-lg"
                   />
-                  <a
-                    href={outputUrl}
-                    download="compressed-video.mp4"
-                    className="mt-4 inline-flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
-                  >
-                    Download Compressed Video
-                  </a>
+                  <div className="mt-4 flex justify-between items-center">
+                    <div className="text-sm text-gray-600">
+                      Saved {processedSize && ((1 - processedSize / video.size) * 100).toFixed(0)}% of original size
+                    </div>
+                    <a
+                      href={outputUrl}
+                      download="compressed-video.mp4"
+                      className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                    >
+                      Download Compressed Video
+                    </a>
+                  </div>
                 </div>
               )}
             </div>
