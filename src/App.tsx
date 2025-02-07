@@ -180,7 +180,7 @@ function App() {
             <SettingsButton onClick={() => setShowSettings(true)} />
           </div>
           <p className="text-gray-600 mb-6">
-            Compress your videos right in the browser. No upload needed - everything happens on your device.
+            Compress videos right in the browser by up to 90% for free. No upload needed.
           </p>
 
           {!video ? (
@@ -304,6 +304,10 @@ function App() {
             </div>
           )}
         </div>
+      </div>
+      <div className="text-center text-sm text-gray-600 mb-4 mt-4">
+          Built by <a href="https://addyosmani.com" className="text-gray-600 hover:text-gray-800" target="_blank" rel="noopener noreferrer">Addy Osmani</a>. 
+          For larger files consider <a href="https://www.freeconvert.com/video-compressor" className="text-gray-600 hover:text-gray-800" target="_blank" rel="noopener noreferrer">FreeConvert</a>.
       </div>
 
       <VideoSettings 
