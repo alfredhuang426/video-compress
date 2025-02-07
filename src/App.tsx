@@ -186,7 +186,7 @@ function App() {
           {!video ? (
             <div 
               {...getRootProps()} 
-              className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors relative
+              className={`bg-gray-100 border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors relative
                 ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}`}
             >
               <input {...getInputProps()} />
@@ -198,7 +198,7 @@ function App() {
               ) : (
                 <>
                   <FileVideo className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                  <p className="text-gray-600">Drag and drop a video file here, or click to select</p>
+                  <p className="text-gray-800">Drag and drop a video file here, or click to select</p>
                 </>
               )}
             </div>
