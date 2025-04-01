@@ -71,7 +71,7 @@ function App() {
     onDrop: async (acceptedFiles) => {
       resetState(); // Reset state before setting new video
       setVideo(acceptedFiles[0]);
-      
+
       // Load FFmpeg if not already loaded
       if (!isReady) {
         await loadFFmpeg();
@@ -154,7 +154,7 @@ function App() {
       // Read the result
       const data = ffmpeg.FS('readFile', 'output.mp4');
       const url = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
-      
+
       setOutputUrl(url);
       setIsProcessing(false);
       setProgress(100);
@@ -171,6 +171,16 @@ function App() {
     }
   };
 
+  const passToOpener = (outputUrl) => {
+    window.opener.postMessage(
+      {
+        type: "button-click",
+        message: outputUrl
+      },
+      "*"
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-2xl mx-auto">
@@ -184,8 +194,8 @@ function App() {
           </p>
 
           {!video ? (
-            <div 
-              {...getRootProps()} 
+            <div
+              {...getRootProps()}
               className={`bg-gray-100 border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors relative
                 ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}`}
             >
@@ -209,7 +219,7 @@ function App() {
                   <FileVideo className="w-6 h-6 mr-2" />
                   <span className="font-medium">{video.name}</span>
                 </div>
-                <button 
+                <button
                   onClick={resetState}
                   className="text-gray-500 hover:text-gray-700"
                 >
@@ -218,7 +228,7 @@ function App() {
               </div>
 
               {!isProcessing && !outputUrl && (
-                <Button 
+                <Button
                   onClick={compressVideo}
                   className="w-full flex items-center justify-center gap-2"
                   disabled={!isReady}
@@ -257,7 +267,7 @@ function App() {
               {isProcessing && (
                 <div className="mt-4">
                   <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden mb-4">
-                    <video 
+                    <video
                       ref={videoRef}
                       src={previewUrl}
                       className="absolute inset-0 w-full h-full opacity-50"
@@ -282,9 +292,9 @@ function App() {
 
               {outputUrl && (
                 <div className="mt-4">
-                  <video 
-                    src={outputUrl} 
-                    controls 
+                  <video
+                    src={outputUrl}
+                    controls
                     className="w-full rounded-lg"
                   />
                   <div className="mt-4 flex justify-between items-center">
@@ -299,6 +309,13 @@ function App() {
                       Download Compressed Video
                     </a>
                   </div>
+                  <Button
+                      onClick={() => {passToOpener(outputUrl)}}
+                      className="w-full flex items-center justify-center gap-2 mt-4"
+                      disabled={!isReady}
+                    >
+                      pass data
+                    </Button>
                 </div>
               )}
             </div>
@@ -306,11 +323,11 @@ function App() {
         </div>
       </div>
       <div className="text-center text-sm text-gray-600 mb-4 mt-4">
-          Built by <a href="https://addyosmani.com" className="text-gray-600 hover:text-gray-800" target="_blank" rel="noopener noreferrer">Addy Osmani</a>. 
-          For larger files consider <a href="https://www.freeconvert.com/video-compressor" className="text-gray-600 hover:text-gray-800" target="_blank" rel="noopener noreferrer">FreeConvert</a>.
+        Built by <a href="https://addyosmani.com" className="text-gray-600 hover:text-gray-800" target="_blank" rel="noopener noreferrer">Addy Osmani</a>.
+        For larger files consider <a href="https://www.freeconvert.com/video-compressor" className="text-gray-600 hover:text-gray-800" target="_blank" rel="noopener noreferrer">FreeConvert</a>.
       </div>
 
-      <VideoSettings 
+      <VideoSettings
         settings={settings}
         onSettingsChange={setSettings}
         open={showSettings}
