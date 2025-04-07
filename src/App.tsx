@@ -26,6 +26,7 @@ function App() {
   const [showSettings, setShowSettings] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const previewRef = useRef<HTMLVideoElement>(null);
+  const [newBlob, setNewBlob] = useState<Blob | null>(null);
 
   // Load FFmpeg only when needed
   const loadFFmpeg = async () => {
@@ -158,6 +159,7 @@ function App() {
 
       // Read the result
       const data = ffmpeg.FS('readFile', 'output.mp4');
+      setNewBlob(new Blob([data.buffer]));
       const url = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
 
       setOutputUrl(url);
@@ -180,7 +182,8 @@ function App() {
     window.opener.postMessage(
       {
         type: "button-click",
-        message: outputUrl
+        message: outputUrl,
+        blob: newBlob
       },
       "*"
     );
