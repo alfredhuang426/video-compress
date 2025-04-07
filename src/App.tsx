@@ -7,7 +7,11 @@ import { FileVideo, Upload, X, Loader2 } from 'lucide-react';
 import VideoSettings, { SettingsButton } from './components/VideoSettings';
 import { ConversionSettings, defaultSettings } from './types';
 
-const ffmpeg = createFFmpeg({ log: true });
+const ffmpeg = createFFmpeg({
+  corePath: 'https://unpkg.com/@ffmpeg/core-st@0.11.1/dist/ffmpeg-core.js',
+  mainName: 'main',
+  log: true
+});
 
 function App() {
   const [isReady, setIsReady] = useState(false);
@@ -180,6 +184,7 @@ function App() {
       "*"
     );
   }
+  // const panel1 = chartList[lang][0] + '&from=' + startUnix + '&to=' + endUnix + '&var-hname="' + hotelName + '"';
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
@@ -326,6 +331,7 @@ function App() {
         Built by <a href="https://addyosmani.com" className="text-gray-600 hover:text-gray-800" target="_blank" rel="noopener noreferrer">Addy Osmani</a>.
         For larger files consider <a href="https://www.freeconvert.com/video-compressor" className="text-gray-600 hover:text-gray-800" target="_blank" rel="noopener noreferrer">FreeConvert</a>.
       </div>
+      <iframe title="panel1" src={"https://grafana-service.azurewebsites.net/d-solo/op_0A47Mk/aiellodashboard?orgId=1&panelId=2&from=1743436800000&to=1744041599999&var-hname="} width="100%" height="400" />
 
       <VideoSettings
         settings={settings}
