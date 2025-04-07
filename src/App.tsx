@@ -176,7 +176,7 @@ function App() {
   };
 
   const passToOpener = (outputUrl) => {
-    window.opener.postMessage(
+    window.parent.postMessage(
       {
         type: "button-click",
         message: outputUrl
