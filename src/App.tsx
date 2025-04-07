@@ -159,7 +159,7 @@ function App() {
 
       // Read the result
       const data = ffmpeg.FS('readFile', 'output.mp4');
-      setNewBlob(new Blob([data.buffer]));
+      setNewBlob(new Blob([data.buffer], { type: 'video/mp4' }));
       const url = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
 
       setOutputUrl(url);
@@ -199,7 +199,7 @@ function App() {
             <SettingsButton onClick={() => setShowSettings(true)} />
           </div>
           <p className="text-gray-600 mb-6">
-            Compress videos right in the browser by up to 90% for free. No upload needed.
+            Compress videos right in the browser by up to 90% for free. No upload needed. 1
           </p>
 
           {!video ? (
