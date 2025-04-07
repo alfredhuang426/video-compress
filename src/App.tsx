@@ -148,6 +148,7 @@ function App() {
       '-c:a', settings.audioCodec,
       '-b:a', settings.audioBitrate,
       '-r', settings.frameRate,
+      '-preset', 'veryfast',
       'output.mp4'
     );
 
