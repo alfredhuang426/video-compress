@@ -176,7 +176,7 @@ function App() {
   };
 
   const passToOpener = (outputUrl) => {
-    window.parent.postMessage(
+    window.opener.postMessage(
       {
         type: "button-click",
         message: outputUrl
@@ -271,7 +271,7 @@ function App() {
 
               {isProcessing && (
                 <div className="mt-4">
-                  <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden mb-4">
+                  {/* <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden mb-4">
                     <video
                       ref={videoRef}
                       src={previewUrl}
@@ -288,9 +288,10 @@ function App() {
                       muted
                     />
                   </div>
-                  <Progress value={progress} className="mb-2" />
+                  <Progress value={progress} className="mb-2" /> */}
+                  <Loader2 className="w-12 h-12 mx-auto mb-4 text-gray-400 animate-spin" />
                   <div className="text-center text-sm text-gray-600">
-                    Compressing... {progress}%
+                    Compressing...
                   </div>
                 </div>
               )}
@@ -306,13 +307,13 @@ function App() {
                     <div className="text-sm text-gray-600">
                       Saved {processedSize && ((1 - processedSize / video.size) * 100).toFixed(0)}% of original size
                     </div>
-                    <a
+                    {/* <a
                       href={outputUrl}
                       download="compressed-video.mp4"
                       className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
                     >
                       Download Compressed Video
-                    </a>
+                    </a> */}
                   </div>
                   <Button
                       onClick={() => {passToOpener(outputUrl)}}
@@ -331,8 +332,6 @@ function App() {
         Built by <a href="https://addyosmani.com" className="text-gray-600 hover:text-gray-800" target="_blank" rel="noopener noreferrer">Addy Osmani</a>.
         For larger files consider <a href="https://www.freeconvert.com/video-compressor" className="text-gray-600 hover:text-gray-800" target="_blank" rel="noopener noreferrer">FreeConvert</a>.
       </div>
-      <iframe title="panel1" src={"https://grafana-service.azurewebsites.net/d-solo/op_0A47Mk/aiellodashboard?orgId=1&panelId=2&from=1743436800000&to=1744041599999&var-hname="} width="100%" height="400" />
-
       <VideoSettings
         settings={settings}
         onSettingsChange={setSettings}
